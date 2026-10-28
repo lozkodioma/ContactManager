@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="uk" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Система управління контактами (ContactFlow) — Лабораторна робота №1, Варіант 10. Розробка веб-додатку на нативному JavaScript ES6+, HTML5 та CSS3.">
+  <meta name="author" content="Студент ХНУРЕ, кафедра АПОТ">
+  <title>ContactFlow — Система управління контактами | Варіант 10</title>
+
+  <!-- Google Fonts: Plus Jakarta Sans -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Основні стилі -->
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <!-- ================= HEADER ================= -->
+  <header class="app-header" id="app-header">
+    <div class="header-container">
+      <div class="logo-group">
+        <div class="logo-icon">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+            <circle cx="9" cy="7" r="4"></circle>
+            <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+            <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+          </svg>
+        </div>
+        <div class="logo-text">
+          <h1 class="app-title">ContactFlow</h1>
+          <p class="app-subtitle">Лабораторна робота №1 &bull; Варіант 10 &bull; ХНУРЕ</p>
+        </div>
+      </div>
+
+      <div class="header-actions">
+        <!-- Кнопка експорту JSON (Бонусне завдання: File API) -->
+        <button type="button" id="export-json-btn" class="btn btn-secondary btn-sm" title="Експорт контактів у JSON">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="7 10 12 15 17 10"></polyline>
+            <line x1="12" y1="15" x2="12" y2="3"></line>
+          </svg>
+          <span>Експорт</span>
+        </button>
+
+        <!-- Кнопка імпорту JSON (Бонусне завдання: File API) -->
+        <button type="button" id="import-json-btn" class="btn btn-secondary btn-sm" title="Імпорт контактів із файлу JSON">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="17 8 12 3 7 8"></polyline>
+            <line x1="12" y1="3" x2="12" y2="15"></line>
+          </svg>
+          <span>Імпорт</span>
+        </button>
+        <input type="file" id="import-file-input" accept=".json,application/json" class="visually-hidden">
+
+        <!-- Перемикач теми (Бонусне завдання: Dark/Light Mode) -->
+        <button type="button" id="theme-toggle-btn" class="btn-theme-toggle" aria-label="Перемкнути тему оформлення" title="Перемкнути тему (Світла / Темна)">
+          <span class="theme-icon light-icon" aria-hidden="true">☀️</span>
+          <span class="theme-icon dark-icon" aria-hidden="true">🌙</span>
+        </button>
+
+        <!-- Кнопка швидкого скролу до форми на малих екранах -->
+        <a href="#add-form-container" class="btn btn-primary btn-sm mobile-add-btn">
+          <span>+ Новий</span>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- ================= NAV (ФІЛЬТРИ КАТЕГОРІЙ) ================= -->
+  <nav class="categories-nav" id="categories-nav" aria-label="Фільтрація контактів за категорією">
+    <div class="nav-container">
+      <div class="nav-scroll">
+        <button type="button" class="nav-tab active" data-filter="all" id="tab-all">
+          <span class="tab-icon">👥</span>
+          <span class="tab-label">Всі контакти</span>
+          <span class="tab-badge" id="badge-all">0</span>
+        </button>
+        <button type="button" class="nav-tab" data-filter="favorites" id="tab-favorites">
+          <span class="tab-icon">⭐</span>
+          <span class="tab-label">Обрані</span>
+          <span class="tab-badge" id="badge-favorites">0</span>
+        </button>
+        <button type="button" class="nav-tab" data-filter="family" id="tab-family">
+          <span class="tab-icon">👨‍👩‍👧‍👦</span>
+          <span class="tab-label">Родина</span>
+          <span class="tab-badge" id="badge-family">0</span>
+        </button>
+        <button type="button" class="nav-tab" data-filter="work" id="tab-work">
+          <span class="tab-icon">💼</span>
+          <span class="tab-label">Робота</span>
+          <span class="tab-badge" id="badge-work">0</span>
+        </button>
+        <button type="button" class="nav-tab" data-filter="friends" id="tab-friends">
+          <span class="tab-icon">🎉</span>
+          <span class="tab-label">Друзі</span>
+          <span class="tab-badge" id="badge-friends">0</span>
+        </button>
+        <button type="button" class="nav-tab" data-filter="other" id="tab-other">
+          <span class="tab-icon">📁</span>
+          <span class="tab-label">Інше</span>
+          <span class="tab-badge" id="badge-other">0</span>
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ================= MAIN CONTENT ================= -->
+  <main class="app-main" id="main-content">
+    <div class="main-layout">
+      <!-- БІЧНА ПАНЕЛЬ: ФОРМА ДОДАВАННЯ КОНТАКТУ -->
+      <aside class="sidebar" id="add-form-container">
+        <section class="add-form-section card" aria-labelledby="add-form-title">
+          <div class="section-header">
+            <div class="section-title-wrap">
+              <span class="section-badge">+ Створення</span>
+              <h2 id="add-form-title" class="section-title">Новий контакт</h2>
+            </div>
+            <p class="section-desc">Заповніть форму. Дані перевіряються регулярними виразами в реальному часі.</p>
+          </div>
+
+          <form id="add-contact-form" class="contact-form" novalidate>
+            <!-- Поле: Ім'я (ПІБ) -->
+            <div class="form-group" id="group-add-name">
+              <label for="add-name" class="form-label">
+                ПІБ / Ім'я <span class="required-star">*</span>
+              </label>
+              <div class="input-wrapper">
+                <span class="input-icon" aria-hidden="true">👤</span>
+                <input 
+                  type="text" 
+                  id="add-name" 
+                  name="name" 
+                  class="form-control" 
+                  placeholder="наприклад: Тарас Шевченко" 
+                  required 
+                  autocomplete="off"
+                >
+                <span class="status-indicator" aria-hidden="true"></span>
+              </div>
+              <span class="field-error" id="error-add-name" role="alert"></span>
+            </div>
+
+            <!-- Поле: Номер телефону -->
+            <div class="form-group" id="group-add-phone">
+              <label for="add-phone" class="form-label">
+                Номер телефону <span class="required-star">*</span>
+              </label>
+              <div class="input-wrapper">
+                <span class="input-icon" aria-hidden="true">📞</span>
+                <input 
+                  type="tel" 
+                  id="add-phone" 
+                  name="phone" 
+                  class="form-control" 
+                  placeholder="+38 (0XX) XXX-XX-XX" 
+                  required 
+                  autocomplete="off"
+                >
+                <span class="status-indicator" aria-hidden="true"></span>
+              </div>
+              <span class="field-error" id="error-add-phone" role="alert"></span>
+            </div>
+
+            <!-- Поле: Email -->
+            <div class="form-group" id="group-add-email">
+              <label for="add-email" class="form-label">
+                Електронна пошта <span class="required-star">*</span>
+              </label>
+              <div class="input-wrapper">
+                <span class="input-icon" aria-hidden="true">✉️</span>
+                <input 
+                  type="email" 
+                  id="add-email" 
+                  name="email" 
+                  class="form-control" 
+                  placeholder="name@domain.com" 
+                  required 
+                  autocomplete="off"
+                >
+                <span class="status-indicator" aria-hidden="true"></span>
+              </div>
+              <span class="field-error" id="error-add-email" role="alert"></span>
+            </div>
+
+            <!-- Поле: Категорія (Група) -->
+            <div class="form-group" id="group-add-category">
+              <label for="add-category" class="form-label">
+                Категорія (Група) <span class="required-star">*</span>
+              </label>
+              <div class="input-wrapper select-wrapper">
+                <span class="input-icon" aria-hidden="true">🏷️</span>
+                <select id="add-category" name="group" class="form-control" required>
+                  <option value="family" selected>👨‍👩‍👧‍👦 Родина</option>
+                  <option value="work">💼 Робота</option>
+                  <option value="friends">🎉 Друзі</option>
+                  <option value="other">📁 Інше</option>
+                </select>
+              </div>
+              <span class="field-error" id="error-add-category" role="alert"></span>
+            </div>
+
+            <!-- Поле: Нотатки -->
+            <div class="form-group" id="group-add-notes">
+              <label for="add-notes" class="form-label">
+                Додаткові нотатки <span class="optional-tag">(опціонально)</span>
+              </label>
+              <div class="input-wrapper">
+                <textarea 
+                  id="add-notes" 
+                  name="notes" 
+                  class="form-control textarea" 
+                  rows="3" 
+                  placeholder="Посада, адреса, день народження тощо..."
+                  maxlength="200"
+                ></textarea>
+              </div>
+              <div class="textarea-counter">
+                <span id="add-char-count">0</span> / 200 символів
+              </div>
+            </div>
+
+            <!-- Чекбокс: Додати в Обрані -->
+            <div class="form-group checkbox-group">
+              <label class="custom-checkbox-label">
+                <input type="checkbox" id="add-favorite" name="isFavorite" class="custom-checkbox">
+                <span class="checkbox-box" aria-hidden="true"></span>
+                <span class="checkbox-text">Додати цей контакт у «Обрані» ⭐</span>
+              </label>
+            </div>
+
+            <!-- Кнопки форми -->
+            <div class="form-actions">
+              <button type="submit" id="submit-add-btn" class="btn btn-primary btn-block">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                  <line x1="12" y1="5" x2="12" y2="19"></line>
+                  <line x1="5" y1="12" x2="19" y2="12"></line>
+                </svg>
+                <span>Зберегти контакт</span>
+              </button>
+              <button type="reset" id="reset-add-btn" class="btn btn-ghost btn-block">
+                <span>Очистити форму</span>
+              </button>
+            </div>
+          </form>
+        </section>
+
+        <!-- Віджет короткої статистики -->
+        <section class="stats-card card" aria-labelledby="stats-title">
+          <h3 id="stats-title" class="stats-title">Статистика контактів</h3>
+          <div class="stats-grid">
+            <div class="stat-item">
+              <span class="stat-number" id="stat-total">0</span>
+              <span class="stat-label">Всього</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-number stat-highlight" id="stat-favorites">0</span>
+              <span class="stat-label">Обрані</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-number" id="stat-family">0</span>
+              <span class="stat-label">Родина</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-number" id="stat-work">0</span>
+              <span class="stat-label">Робота</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-number" id="stat-friends">0</span>
+              <span class="stat-label">Друзі</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-number" id="stat-other">0</span>
+              <span class="stat-label">Інше</span>
+            </div>
+          </div>
+        </section>
+      </aside>
+
+      <!-- РОБОЧА ЗОНА: ПОШУК, СОРТУВАННЯ ТА СПИСОК КОНТАКТІВ -->
+      <section class="contacts-workspace" aria-labelledby="workspace-title">
+        <!-- Панель керування: Пошук та сортування -->
+        <div class="workspace-toolbar card">
+          <div class="search-box">
+            <span class="search-icon" aria-hidden="true">🔍</span>
+            <input 
+              type="text" 
+              id="search-input" 
+              class="search-input" 
+              placeholder="Пошук за ім'ям або номером телефону..." 
+              autocomplete="off"
+            >
+            <button type="button" id="clear-search-btn" class="clear-search-btn hidden" aria-label="Очистити пошук">✕</button>
+          </div>
+
+          <div class="toolbar-controls">
+            <!-- Сортування (подія change) -->
+            <div class="control-group">
+              <label for="sort-select" class="control-label">Сортувати:</label>
+              <select id="sort-select" class="form-select">
+                <option value="name-asc">Ім'я (А → Я)</option>
+                <option value="name-desc">Ім'я (Я → А)</option>
+                <option value="date-desc" selected>Спочатку нові</option>
+                <option value="date-asc">Спочатку старі</option>
+              </select>
+            </div>
+
+            <!-- Режим відображення: Групований / Плоский -->
+            <div class="view-toggle-wrap">
+              <button type="button" id="toggle-view-grouped" class="view-btn active" title="Групувати за категоріями" aria-pressed="true">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="3" y="3" width="7" height="7"></rect>
+                  <rect x="14" y="3" width="7" height="7"></rect>
+                  <rect x="14" y="14" width="7" height="7"></rect>
+                  <rect x="3" y="14" width="7" height="7"></rect>
+                </svg>
+                <span>Групи</span>
+              </button>
+              <button type="button" id="toggle-view-flat" class="view-btn" title="Суцільний список" aria-pressed="false">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <line x1="8" y1="6" x2="21" y2="6"></line>
+                  <line x1="8" y1="12" x2="21" y2="12"></line>
+                  <line x1="8" y1="18" x2="21" y2="18"></line>
+                  <line x1="3" y1="6" x2="3.01" y2="6"></line>
+                  <line x1="3" y1="12" x2="3.01" y2="12"></line>
+                  <line x1="3" y1="18" x2="3.01" y2="18"></line>
+                </svg>
+                <span>Список</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Контейнер знайдених контактів або порожнього стану -->
+        <div class="contacts-content-wrap">
+          <!-- Інформаційний рядок активного фільтру -->
+          <div class="filter-indicator-bar" id="filter-indicator-bar">
+            <span id="results-count-text">Показано контактів: 0</span>
+            <button type="button" id="reset-all-filters-btn" class="btn-text hidden">Скинути всі фільтри</button>
+          </div>
+
+          <!-- Динамічний контейнер для генерації списку через DOM -->
+          <div id="contacts-container" class="contacts-container" aria-live="polite">
+            <!-- Тут динамічно генеруються групи та картки контактів засобами JavaScript -->
+          </div>
+
+          <!-- Блок порожнього стану (Empty State) -->
+          <div id="empty-state" class="empty-state card hidden">
+            <div class="empty-icon">📭</div>
+            <h3 class="empty-title">Контактів не знайдено</h3>
+            <p class="empty-desc" id="empty-state-text">За вашим запитом або обраним фільтром не знайдено жодного контакту.</p>
+            <button type="button" id="empty-action-btn" class="btn btn-secondary btn-sm">
+              Скинути параметри пошуку
+            </button>
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <!-- ================= МОДАЛЬНЕ ВІКНО РЕДАГУВАННЯ КОНТАКТУ ================= -->
+  <div id="edit-modal" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="edit-modal-title">
+    <div class="modal-dialog card">
+      <div class="modal-header">
+        <div class="modal-title-group">
+          <span class="modal-badge">✏️ Редагування</span>
+          <h2 id="edit-modal-title" class="modal-title">Редагувати контакт</h2>
+        </div>
+        <button type="button" class="modal-close-btn" id="close-edit-modal-btn" aria-label="Закрити модальне вікно">✕</button>
+      </div>
+
+      <form id="edit-contact-form" class="contact-form" novalidate>
+        <input type="hidden" id="edit-id" name="id">
+
+        <!-- Поле: Ім'я (ПІБ) -->
+        <div class="form-group" id="group-edit-name">
+          <label for="edit-name" class="form-label">ПІБ / Ім'я <span class="required-star">*</span></label>
+          <div class="input-wrapper">
+            <span class="input-icon" aria-hidden="true">👤</span>
+            <input type="text" id="edit-name" name="name" class="form-control" required autocomplete="off">
+            <span class="status-indicator" aria-hidden="true"></span>
+          </div>
+          <span class="field-error" id="error-edit-name" role="alert"></span>
+        </div>
+
+        <!-- Поле: Номер телефону -->
+        <div class="form-group" id="group-edit-phone">
+          <label for="edit-phone" class="form-label">Номер телефону <span class="required-star">*</span></label>
+          <div class="input-wrapper">
+            <span class="input-icon" aria-hidden="true">📞</span>
+            <input type="tel" id="edit-phone" name="phone" class="form-control" required autocomplete="off">
+            <span class="status-indicator" aria-hidden="true"></span>
+          </div>
+          <span class="field-error" id="error-edit-phone" role="alert"></span>
+        </div>
+
+        <!-- Поле: Email -->
+        <div class="form-group" id="group-edit-email">
+          <label for="edit-email" class="form-label">Електронна пошта <span class="required-star">*</span></label>
+          <div class="input-wrapper">
+            <span class="input-icon" aria-hidden="true">✉️</span>
+            <input type="email" id="edit-email" name="email" class="form-control" required autocomplete="off">
+            <span class="status-indicator" aria-hidden="true"></span>
+          </div>
+          <span class="field-error" id="error-edit-email" role="alert"></span>
+        </div>
+
+        <!-- Поле: Категорія (Група) -->
+        <div class="form-group" id="group-edit-category">
+          <label for="edit-category" class="form-label">Категорія (Група) <span class="required-star">*</span></label>
+          <div class="input-wrapper select-wrapper">
+            <span class="input-icon" aria-hidden="true">🏷️</span>
+            <select id="edit-category" name="group" class="form-control" required>
+              <option value="family">👨‍👩‍👧‍👦 Родина</option>
+              <option value="work">💼 Робота</option>
+              <option value="friends">🎉 Друзі</option>
+              <option value="other">📁 Інше</option>
+            </select>
+          </div>
+          <span class="field-error" id="error-edit-category" role="alert"></span>
+        </div>
+
+        <!-- Поле: Нотатки -->
+        <div class="form-group" id="group-edit-notes">
+          <label for="edit-notes" class="form-label">Додаткові нотатки</label>
+          <div class="input-wrapper">
+            <textarea id="edit-notes" name="notes" class="form-control textarea" rows="3" maxlength="200"></textarea>
+          </div>
+        </div>
+
+        <!-- Чекбокс: Обраний -->
+        <div class="form-group checkbox-group">
+          <label class="custom-checkbox-label">
+            <input type="checkbox" id="edit-favorite" name="isFavorite" class="custom-checkbox">
+            <span class="checkbox-box" aria-hidden="true"></span>
+            <span class="checkbox-text">Зберегти в «Обрані» ⭐</span>
+          </label>
+        </div>
+
+        <!-- Дії модального вікна -->
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" id="cancel-edit-btn">Скасувати</button>
+          <button type="submit" class="btn btn-primary" id="save-edit-btn">Зберегти зміни</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ================= МОДАЛЬНЕ ВІКНО ПІДТВЕРДЖЕННЯ ВИДАЛЕННЯ ================= -->
+  <div id="delete-modal" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="delete-modal-title">
+    <div class="modal-dialog modal-dialog-sm card">
+      <div class="delete-icon-wrap">
+        <span class="delete-danger-icon">⚠️</span>
+      </div>
+      <h3 id="delete-modal-title" class="delete-dialog-title">Видалити контакт?</h3>
+      <p class="delete-dialog-desc">
+        Ви впевнені, що бажаєте назавжди видалити контакт <strong id="delete-contact-name-display">«...»</strong>? Цю дію неможливо буде відновити.
+      </p>
+      <div class="modal-footer modal-footer-center">
+        <button type="button" class="btn btn-secondary" id="cancel-delete-btn">Скасувати</button>
+        <button type="button" class="btn btn-danger" id="confirm-delete-btn">Так, видалити</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= КОНТЕЙНЕР СПЛИВАЮЧИХ СПОВІЩЕНЬ (TOAST) ================= -->
+  <div id="toast-container" class="toast-container" aria-live="assertive"></div>
+
+  <!-- ================= FOOTER ================= -->
+  <footer class="app-footer">
+    <div class="footer-container">
+      <p class="footer-copy">&copy; 2026 Лабораторна робота №1. Дисципліна «Технології веб-розробки». Варіант 10.</p>
+      <p class="footer-sub">Харківський національний університет радіоелектроніки (ХНУРЕ), кафедра АПОТ.</p>
+    </div>
+  </footer>
+
+  <!-- Підключення скриптів: спочатку класи models.js, потім логіка app.js -->
+  <script src="models.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
